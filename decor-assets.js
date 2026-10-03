@@ -1,0 +1,1 @@
+window.DECOR_ASSETS={"ivy":"data:image/webp;base64,UklGRuJfAABXRUJQVlA4INZfAACw4gKdASqWAZYAPlEkk0WkIqGhJAwAQAbEtq3nZP9mZmd3dnZ2YAAAAAAAAPz0gQ..."};
