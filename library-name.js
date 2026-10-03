@@ -61,3 +61,5 @@
   display.onclick=openEditor;
   render();
 })();
+// Load the spreadsheet importer without changing the stable page structure.
+(function(){if(document.querySelector('script[data-library-importer]'))return;const s=document.createElement('script');s.src='imported-books.js?v=20261003-1';s.dataset.libraryImporter='true';document.body.appendChild(s)})();
