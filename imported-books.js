@@ -1,1 +1,1 @@
-window.IMPORTED_BOOKS=[];
+window.IMPORTED_BOOKS=[{"id":"imp001","title":"Lights Out","author":"Navessa Allen","genre":"Romance","format":"Kindle/eBook","read":true,"contentRating":"R","rating":3,"spice":3,"color":"#563329"},{"id":"imp002","title":"Lets Get Lost","author":"Adi Alsaid","genre":"Contemporary","format":"Paperback","read":false,"contentRating":"PG","rating":2,"spice":null,"color":"#233a32"}];
