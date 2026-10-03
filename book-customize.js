@@ -1,5 +1,12 @@
 // Per-book visual customization: spine color/height + cover upload.
 (function(){
+  // Safety guard: this feature should initialize only once, even if the script
+  // is accidentally loaded twice. Also clean up any duplicate UI left behind.
+  const existingCustomizers=document.querySelectorAll('.book-customizer');
+  existingCustomizers.forEach((el,i)=>{if(i>0)el.remove()});
+  if(window.__bookCustomizeInitialized)return;
+  window.__bookCustomizeInitialized=true;
+
   const KEY='bookVisuals';
   let visuals=JSON.parse(localStorage.getItem(KEY)||'{}');
   let currentBook=null;
@@ -12,8 +19,6 @@
     el.style.height=(v.height||135+(b.id*13)%50)+'px';
   });
 
-  // shelf-drag.js owns the final shelf renderer, so keep appearance settings
-  // attached even when that renderer runs after this script or rerenders later.
   function wrapCurrentRenderer(){
     const renderer=window.renderShelves;
     if(typeof renderer!=='function'||renderer.__appearanceWrapped)return;
@@ -26,8 +31,6 @@
     window.renderShelves=wrapped;
   }
   wrapCurrentRenderer();
-  // shelf-drag initializes synchronously in normal use; this second pass also
-  // protects against a delayed decor-assets load replacing renderShelves.
   setTimeout(()=>{wrapCurrentRenderer();applyBookStyles()},0);
   window.addEventListener('load',()=>{wrapCurrentRenderer();applyBookStyles()});
 
@@ -36,6 +39,8 @@
     .book-customizer{margin:18px 0;padding:14px;background:#17352c;border:1px solid #927e5266;border-radius:8px}.book-customizer h3{margin:0 0 12px;font-size:14px;font-weight:normal;color:#e9d9ae;letter-spacing:1px}.custom-row{display:grid;grid-template-columns:95px 1fr;gap:10px;align-items:center;margin:10px 0;font-size:13px}.custom-row input[type=color]{width:100%;height:36px;background:#102a23;border:1px solid #8f7a4d66;border-radius:5px;padding:2px}.custom-row input[type=range]{width:100%}.cover-upload{display:block;width:100%;padding:9px;background:#203c32;border:1px solid #927e5266;color:#e8dfc8;border-radius:5px}.cover-actions{display:flex;gap:8px;margin-top:8px}.small-btn{flex:1;padding:7px;border:1px solid #927e5266;background:#102a23;color:#d9caa5;border-radius:5px;cursor:pointer}.height-value{color:#bca978;font-size:12px;margin-left:4px}
   `;document.head.appendChild(style);
   const notes=document.querySelector('#notes');
+  // Remove any stale duplicate before creating the one working appearance panel.
+  document.querySelectorAll('.book-customizer').forEach(el=>el.remove());
   const custom=document.createElement('div');custom.className='book-customizer';custom.innerHTML=`<h3>BOOK APPEARANCE</h3><div class="custom-row"><label>Spine color</label><input id="spineColor" type="color"></div><div class="custom-row"><label>Spine height</label><div><input id="spineHeight" type="range" min="120" max="190" step="1"><span id="heightValue" class="height-value"></span></div></div><div class="custom-row"><label>Book cover</label><input id="coverUpload" class="cover-upload" type="file" accept="image/*"></div><div class="cover-actions"><button id="resetSpine" class="small-btn">Reset spine</button><button id="removeCover" class="small-btn">Remove cover</button></div>`;
   notes.parentNode.insertBefore(custom,notes);
   const color=document.querySelector('#spineColor'),height=document.querySelector('#spineHeight'),heightValue=document.querySelector('#heightValue'),upload=document.querySelector('#coverUpload'),remove=document.querySelector('#removeCover'),reset=document.querySelector('#resetSpine');
