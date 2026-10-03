@@ -1,38 +1,36 @@
-// Enhanced shelf drag-and-drop: allow dropping onto books or empty shelf space.
+// Shelf + decor drag-and-drop. Books and decor can move between shelves and between one another.
 (function(){
-  const originalRender = window.renderShelves;
-  if (typeof originalRender !== 'function') return;
+  if(typeof window.renderShelves!=='function'||!window.DECOR_ASSETS)return;
+  let decorItems=JSON.parse(localStorage.getItem('libraryDecor')||'null')||[
+    {id:'d1',type:'pothos',shelf:0,pos:6},{id:'d2',type:'candle',shelf:1,pos:6},{id:'d3',type:'fern',shelf:2,pos:6}
+  ];
+  let draggedDecor=null;
+  const saveDecor=()=>localStorage.setItem('libraryDecor',JSON.stringify(decorItems));
+  const style=document.createElement('style');
+  style.textContent=`
+  .decor{width:72px;height:112px;object-fit:contain;align-self:flex-end;padding:0 3px;filter:drop-shadow(2px 5px 5px #0009);cursor:grab;flex:0 0 auto;transition:.18s;user-select:none}.decor:hover{transform:translateY(-3px) scale(1.03);filter:drop-shadow(2px 7px 7px #000b) brightness(1.08)}.decor.dragging{opacity:.45}.decor-button{background:#1b392f;border:1px solid #a58b5866;color:#eadcb8;border-radius:20px;padding:9px 14px;cursor:pointer}.decor-drawer{position:fixed;left:210px;right:0;bottom:0;z-index:20;background:#0b211cf5;border-top:1px solid #a88c56;box-shadow:0 -15px 35px #0009;padding:16px 22px 20px;transform:translateY(105%);transition:.25s}.decor-drawer.open{transform:none}.decor-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}.decor-head h3{margin:0;font-weight:normal;color:#ead8aa;letter-spacing:1px}.decor-close{background:none;border:0;color:#ead8aa;font-size:25px;cursor:pointer}.decor-grid{display:flex;gap:12px;overflow-x:auto;padding:5px 2px 8px}.decor-choice{min-width:105px;background:#122d25;border:1px solid #8e794c55;border-radius:8px;padding:8px;color:#cfc3a5;text-align:center;cursor:pointer}.decor-choice:hover{border-color:#c7a86b;background:#18382e}.decor-choice img{width:82px;height:86px;object-fit:contain;display:block;margin:auto}.decor-choice small{display:block;white-space:nowrap}.shelf.decor-over{box-shadow:0 10px 10px #120a07,inset 0 0 24px #c7a86b55!important}@media(max-width:760px){.decor-drawer{left:0}.decor{width:58px;height:92px}.decor-button{padding:8px 11px}}
+  `;document.head.appendChild(style);
 
-  window.renderShelves = function(){
-    let q=document.querySelector('#search').value.toLowerCase();
-    let mode=document.querySelector('#sort').value;
-    let list=ordered().filter(b=>(b.title+' '+b.author+' '+b.genre).toLowerCase().includes(q));
-    if(mode!=='custom') list.sort((a,b)=>(a[mode]||'').localeCompare(b[mode]||''));
-    let root=document.querySelector('#shelves'); root.innerHTML='';
+  const top=document.querySelector('#shelf .top');
+  if(top&&!document.querySelector('#decorBtn')){const b=document.createElement('button');b.id='decorBtn';b.className='decor-button';b.textContent='✦ Decorate';top.appendChild(b)}
+  const drawer=document.createElement('div');drawer.className='decor-drawer';drawer.innerHTML=`<div class="decor-head"><h3>Conservatory Decor Collection</h3><button class="decor-close">×</button></div><div class="decor-grid"></div>`;document.body.appendChild(drawer);
+  const grid=drawer.querySelector('.decor-grid');
+  Object.keys(DECOR_ASSETS).forEach(type=>{const c=document.createElement('button');c.className='decor-choice';c.innerHTML=`<img src="${DECOR_ASSETS[type]}" alt=""><small>${DECOR_LABELS[type]||type}</small>`;c.onclick=()=>{decorItems.push({id:'d'+Date.now()+Math.random().toString(16).slice(2),type,shelf:0,pos:99});saveDecor();renderShelves()};grid.appendChild(c)});
+  document.querySelector('#decorBtn').onclick=()=>drawer.classList.toggle('open');drawer.querySelector('.decor-close').onclick=()=>drawer.classList.remove('open');
+
+  window.renderShelves=function(){
+    let q=document.querySelector('#search').value.toLowerCase();let mode=document.querySelector('#sort').value;
+    let list=ordered().filter(b=>(b.title+' '+b.author+' '+b.genre).toLowerCase().includes(q));if(mode!=='custom')list.sort((a,b)=>(a[mode]||'').localeCompare(b[mode]||''));
+    let root=document.querySelector('#shelves');root.innerHTML='';
     for(let s=0;s<3;s++){
-      let sh=document.createElement('div'); sh.className='shelf'; sh.dataset.shelf=s;
-      const shelfBooks=list.slice(s*6,s*6+6);
-      sh.ondragover=e=>{e.preventDefault(); sh.style.boxShadow='0 10px 10px #120a07,inset 0 0 24px #c7a86b55'};
-      sh.ondragleave=()=>{sh.style.boxShadow=''};
-      sh.ondrop=e=>{
-        e.preventDefault(); e.stopPropagation(); sh.style.boxShadow='';
-        if(!dragged || mode!=='custom' || q) return;
-        let from=order.indexOf(dragged); if(from<0) return;
-        order.splice(from,1);
-        let target=Math.min(s*6+6,order.length);
-        order.splice(target,0,dragged);
-        localStorage.setItem('bookOrder',JSON.stringify(order)); renderShelves();
-      };
-      shelfBooks.forEach(b=>{
-        let el=document.createElement('button'); el.className='book'; el.draggable=true; el.dataset.id=b.id; el.textContent=b.title; el.style.background=b.color; el.style.height=(135+(b.id*13)%50)+'px'; el.style.width=(28+(b.id*7)%16)+'px';
-        el.onclick=()=>openBook(b); el.ondragstart=e=>{dragged=b.id;e.dataTransfer.effectAllowed='move'}; el.ondragover=e=>e.preventDefault();
-        el.ondrop=e=>{e.preventDefault();e.stopPropagation();if(dragged&&dragged!==b.id&&mode==='custom'&&!q){let a=order.indexOf(dragged),z=order.indexOf(b.id);order.splice(a,1);z=order.indexOf(b.id);order.splice(z,0,dragged);localStorage.setItem('bookOrder',JSON.stringify(order));renderShelves()}};
-        sh.appendChild(el);
-      });
-      if(s===0){let d=document.createElement('span');d.className='decor';d.textContent='🪴';sh.appendChild(d)}
-      if(s===1){let d=document.createElement('span');d.className='decor';d.textContent='🕯️';sh.appendChild(d)}
-      if(s===2){let d=document.createElement('span');d.className='decor';d.textContent='🌿';sh.appendChild(d)}
-      root.appendChild(sh);
+      let sh=document.createElement('div');sh.className='shelf';sh.dataset.shelf=s;const shelfBooks=list.slice(s*6,s*6+6);const shelfDecor=decorItems.filter(d=>d.shelf===s).sort((a,b)=>a.pos-b.pos);
+      const dropDecor=(pos)=>{if(!draggedDecor)return false;let d=decorItems.find(x=>x.id===draggedDecor);if(!d)return false;d.shelf=s;d.pos=pos;saveDecor();draggedDecor=null;renderShelves();return true};
+      sh.ondragover=e=>{e.preventDefault();sh.classList.add('decor-over')};sh.ondragleave=()=>sh.classList.remove('decor-over');
+      sh.ondrop=e=>{e.preventDefault();e.stopPropagation();sh.classList.remove('decor-over');if(dropDecor(shelfBooks.length))return;if(!dragged||mode!=='custom'||q)return;let from=order.indexOf(dragged);if(from<0)return;order.splice(from,1);let target=Math.min(s*6+6,order.length);order.splice(target,0,dragged);localStorage.setItem('bookOrder',JSON.stringify(order));renderShelves()};
+      const addDecorAt=(slot)=>shelfDecor.filter(d=>Math.min(d.pos,shelfBooks.length)===slot).forEach(d=>{let el=document.createElement('img');el.className='decor';el.src=DECOR_ASSETS[d.type];el.alt=DECOR_LABELS[d.type]||'Shelf decor';el.title=(DECOR_LABELS[d.type]||'Decor')+' — drag to move · double-click to remove';el.draggable=true;el.ondragstart=e=>{draggedDecor=d.id;dragged=null;el.classList.add('dragging');e.dataTransfer.effectAllowed='move'};el.ondragend=()=>el.classList.remove('dragging');el.ondragover=e=>e.preventDefault();el.ondrop=e=>{e.preventDefault();e.stopPropagation();if(draggedDecor&&draggedDecor!==d.id){let moving=decorItems.find(x=>x.id===draggedDecor);moving.shelf=s;moving.pos=d.pos;saveDecor();draggedDecor=null;renderShelves()}};el.ondblclick=()=>{decorItems=decorItems.filter(x=>x.id!==d.id);saveDecor();renderShelves()};sh.appendChild(el)});
+      for(let i=0;i<=shelfBooks.length;i++){
+        addDecorAt(i);if(i===shelfBooks.length)break;let b=shelfBooks[i];let el=document.createElement('button');el.className='book';el.draggable=true;el.dataset.id=b.id;el.textContent=b.title;el.style.background=b.color;el.style.height=(135+(b.id*13)%50)+'px';el.style.width=(28+(b.id*7)%16)+'px';el.onclick=()=>openBook(b);el.ondragstart=e=>{dragged=b.id;draggedDecor=null;e.dataTransfer.effectAllowed='move'};el.ondragover=e=>e.preventDefault();el.ondrop=e=>{e.preventDefault();e.stopPropagation();if(dropDecor(i))return;if(dragged&&dragged!==b.id&&mode==='custom'&&!q){let a=order.indexOf(dragged);order.splice(a,1);let z=order.indexOf(b.id);order.splice(z,0,dragged);localStorage.setItem('bookOrder',JSON.stringify(order));renderShelves()}};sh.appendChild(el)}
+      root.appendChild(sh)
     }
   };
   renderShelves();
