@@ -13,6 +13,9 @@
     assets.booksIvy = 'Books%20%26%20Ivy.png?v=1';
     assets.realisticHourglass = 'hourglass.png?v=1';
     assets.crystalBall = 'crystal_ball.png?v=1';
+    assets.hangingPottedPlant = 'hanging_potted_plant.png?v=1';
+    assets.vintageCamera = 'vintage_camera.png?v=1';
+    assets.mushroomCloche = 'mushroom_cloche.png?v=1';
     return assets;
   }
 
@@ -26,12 +29,18 @@
       window.DECOR_LABELS.booksIvy = 'Books & Ivy';
       window.DECOR_LABELS.realisticHourglass = 'Antique Hourglass';
       window.DECOR_LABELS.crystalBall = 'Crystal Ball';
+      window.DECOR_LABELS.hangingPottedPlant = 'Hanging Potted Plant';
+      window.DECOR_LABELS.vintageCamera = 'Vintage Camera';
+      window.DECOR_LABELS.mushroomCloche = 'Mushroom Cloche';
     }
     if (window.DECOR_SIZES) {
       window.DECOR_SIZES.booksCandles = {w:125,h:145};
       window.DECOR_SIZES.booksIvy = {w:135,h:150};
       window.DECOR_SIZES.realisticHourglass = {w:82,h:142};
       window.DECOR_SIZES.crystalBall = {w:112,h:132};
+      window.DECOR_SIZES.hangingPottedPlant = {w:120,h:145};
+      window.DECOR_SIZES.vintageCamera = {w:105,h:125};
+      window.DECOR_SIZES.mushroomCloche = {w:112,h:130};
     }
   }
 
