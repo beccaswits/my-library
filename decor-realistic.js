@@ -1,15 +1,25 @@
 // Photorealistic Decor 2.0 overrides.
-// This file may load before decor-assets.js, so expose an override function
-// that shelf-drag.js can call immediately after the base assets are ready.
+// This loads before decor-assets.js in the current app, so intercept the
+// base asset assignment and swap the three approved PNGs in immediately.
 (function () {
-  function applyRealisticDecor() {
-    if (!window.DECOR_ASSETS) return false;
-    window.DECOR_ASSETS.globe = 'globe-realistic.png?v=2';
-    window.DECOR_ASSETS.pothos = 'pothos-realistic.png?v=2';
-    window.DECOR_ASSETS.cat = 'cat-realistic.png?v=2';
-    return true;
+  function applyRealisticDecor(assets) {
+    if (!assets) return assets;
+    assets.globe = 'globe-realistic.png?v=3';
+    assets.pothos = 'pothos-realistic.png?v=3';
+    assets.cat = 'cat-realistic.png?v=3';
+    return assets;
   }
 
-  window.applyRealisticDecor = applyRealisticDecor;
-  applyRealisticDecor();
+  if (window.DECOR_ASSETS) {
+    applyRealisticDecor(window.DECOR_ASSETS);
+    return;
+  }
+
+  let storedAssets;
+  Object.defineProperty(window, 'DECOR_ASSETS', {
+    configurable: true,
+    enumerable: true,
+    get: function () { return storedAssets; },
+    set: function (value) { storedAssets = applyRealisticDecor(value); }
+  });
 })();
