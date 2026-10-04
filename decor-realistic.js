@@ -72,11 +72,13 @@
     });
   }
 
-  function runFixes(){fixRenderedSizes(document);fixDrawerLabels();}
+  function removeLegacyLeaf(){
+    document.querySelectorAll('.vine').forEach(function(el){el.remove();});
+  }
+
+  function runFixes(){removeLegacyLeaf();fixRenderedSizes(document);fixDrawerLabels();}
   function installFixes(){
-    // Run a few bounded passes while the shelf/drawer initializes. Do not observe
-    // DOM mutations continuously: changing drawer labels can itself trigger
-    // mutations and create an infinite callback loop that freezes the page.
+    removeLegacyLeaf();
     setTimeout(runFixes,100);
     setTimeout(runFixes,500);
     setTimeout(runFixes,1200);
