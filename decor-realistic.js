@@ -11,6 +11,8 @@
     assets.antiqueBooks = 'Antique%20Gilded%20Leather%20Book%20Collection.png?v=1';
     assets.booksCandles = 'Books%20%26%20Candles.png?v=1';
     assets.booksIvy = 'Books%20%26%20Ivy.png?v=1';
+    assets.realisticHourglass = 'hourglass.png?v=1';
+    assets.crystalBall = 'crystal_ball.png?v=1';
     return assets;
   }
 
@@ -22,10 +24,14 @@
       window.DECOR_LABELS.antiqueBooks = 'Antique Gilded Books';
       window.DECOR_LABELS.booksCandles = 'Books & Candles';
       window.DECOR_LABELS.booksIvy = 'Books & Ivy';
+      window.DECOR_LABELS.realisticHourglass = 'Antique Hourglass';
+      window.DECOR_LABELS.crystalBall = 'Crystal Ball';
     }
     if (window.DECOR_SIZES) {
       window.DECOR_SIZES.booksCandles = {w:125,h:145};
       window.DECOR_SIZES.booksIvy = {w:135,h:150};
+      window.DECOR_SIZES.realisticHourglass = {w:82,h:142};
+      window.DECOR_SIZES.crystalBall = {w:112,h:132};
     }
   }
 
