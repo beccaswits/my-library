@@ -4,7 +4,7 @@
 (function () {
   function applyRealisticDecor(assets) {
     if (!assets) return assets;
-    assets.globe = 'globe-realistic.png?v=3';
+    assets.globe = 'globe-realistic.png?v=4';
     assets.pothos = 'pothos-realistic.png?v=3';
     assets.cat = 'cat-realistic.png?v=3';
     return assets;
