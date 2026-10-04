@@ -5,8 +5,6 @@
     assets.globe = 'globe-realistic.png?v=4';
     assets.pothos = 'pothos-realistic.png?v=3';
     assets.cat = 'cat-realistic.png?v=3';
-
-    // These filenames match the PNGs uploaded to the repository exactly.
     assets.armillary = 'Armillary%20Sphere.png?v=2';
     assets.bankerLamp = 'Vintage%20Green%20Banker%E2%80%99s%20Lamp.png?v=2';
     assets.crescentMoon = 'Ornate%20Brass%20Crescent%20Moon%20Sculpture.png?v=2';
@@ -21,37 +19,64 @@
       window.DECOR_LABELS.crescentMoon = 'Brass Crescent Moon';
       window.DECOR_LABELS.antiqueBooks = 'Antique Gilded Books';
     }
-    if (window.DECOR_SIZES) {
-      // Final photorealistic sizing overrides.
-      // Cat, globe, and pothos are intentionally larger than the previous pass.
-      window.DECOR_SIZES.pothos = {w:126,h:174};
-      window.DECOR_SIZES.globe = {w:126,h:174};
-      window.DECOR_SIZES.cat = {w:116,h:174};
+  }
 
-      // Keep these approved sizes unchanged.
-      window.DECOR_SIZES.armillary = {w:104,h:142};
-      window.DECOR_SIZES.bankerLamp = {w:98,h:112};
-      window.DECOR_SIZES.crescentMoon = {w:82,h:126};
+  // shelf-drag.js writes its own inline dimensions after the metadata file loads.
+  // Apply the requested final visual sizing to the rendered shelf images instead.
+  function fixRenderedSizes(root) {
+    var scope = root && root.querySelectorAll ? root : document;
+    scope.querySelectorAll('img.decor').forEach(function (img) {
+      var src = decodeURIComponent(img.getAttribute('src') || img.src || '');
+      var factor = 1;
+      if (/pothos-realistic\.png/i.test(src) || /globe-realistic\.png/i.test(src) || /cat-realistic\.png/i.test(src)) factor = 1.18;
+      if (/Antique Gilded Leather Book Collection\.png/i.test(src)) factor = 1.9;
+      if (factor === 1 || img.dataset.finalSizeFix === '1') return;
 
-      // Make the decorative book collection comparable in height to shelf books.
-      window.DECOR_SIZES.antiqueBooks = {w:205,h:190};
+      var w = parseFloat(img.style.width) || img.getBoundingClientRect().width;
+      var h = parseFloat(img.style.height) || img.getBoundingClientRect().height;
+      if (!w || !h) return;
+      img.style.width = Math.round(w * factor) + 'px';
+      img.style.height = Math.round(h * factor) + 'px';
+      img.style.maxHeight = 'none';
+      img.dataset.finalSizeFix = '1';
+
+      var wrap = img.closest('.decor-wrap');
+      if (wrap) wrap.style.width = Math.round((w * factor) * 0.82) + 'px';
+    });
+  }
+
+  function installSizeWatcher() {
+    var run = function () { fixRenderedSizes(document); };
+    setTimeout(run, 100);
+    setTimeout(run, 500);
+    if (document.body) {
+      new MutationObserver(function (mutations) {
+        mutations.forEach(function (m) {
+          m.addedNodes.forEach(function (node) {
+            if (node.nodeType === 1) fixRenderedSizes(node);
+          });
+        });
+      }).observe(document.body, {childList:true, subtree:true});
+    } else {
+      document.addEventListener('DOMContentLoaded', installSizeWatcher, {once:true});
     }
   }
 
   if (window.DECOR_ASSETS) {
     applyRealisticDecor(window.DECOR_ASSETS);
     addMetadata();
-    return;
+  } else {
+    let storedAssets;
+    Object.defineProperty(window, 'DECOR_ASSETS', {
+      configurable: true,
+      enumerable: true,
+      get: function () { return storedAssets; },
+      set: function (value) {
+        storedAssets = applyRealisticDecor(value);
+        setTimeout(addMetadata, 0);
+      }
+    });
   }
 
-  let storedAssets;
-  Object.defineProperty(window, 'DECOR_ASSETS', {
-    configurable: true,
-    enumerable: true,
-    get: function () { return storedAssets; },
-    set: function (value) {
-      storedAssets = applyRealisticDecor(value);
-      setTimeout(addMetadata, 0);
-    }
-  });
+  installSizeWatcher();
 })();
