@@ -28,7 +28,7 @@
     <option value="tags">Tags</option>
   `;
   const search=document.querySelector('#libsearch');
-  if(search){search.placeholder='Search books, authors, genres, tags…';search.insertAdjacentElement('afterend',select)}else top.appendChild(select);
+  if(search){search.placeholder='Search books, authors, genres, series, tags…';search.insertAdjacentElement('afterend',select)}else top.appendChild(select);
 
   function text(v,fallback){v=v==null?'':String(v).trim();return v||fallback;}
   function tagsFor(book){return Array.isArray(book.tags)?book.tags.map(t=>String(t).trim()).filter(Boolean):[]}
@@ -38,7 +38,7 @@
   function formatGroup(v){const f=text(v,'Other');if(/kindle|ebook|e-book|digital/i.test(f))return 'Kindle / eBook';if(/audio/i.test(f))return 'Audiobook';if(/hardcover|paperback|physical|print/i.test(f))return 'Physical';return f;}
   function groupValue(book,mode){if(mode==='author')return [text(book.author,'Unknown Author')];if(mode==='genre')return [text(book.genre,'Uncategorized')];if(mode==='contentRating')return [text(book.contentRating,'Not Rated')];if(mode==='format')return [formatGroup(book.format)];if(mode==='tags')return tagsFor(book).length?tagsFor(book):['Untagged'];return [''];}
   function makeCard(book){const c=document.createElement('div');c.className='card';c.dataset.bookId=book.id;const tagHtml=tagsFor(book).length?`<div class="library-card-tags">${tagsFor(book).map(t=>`<span class="library-card-tag">${t.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</span>`).join('')}</div>`:'';c.innerHTML=`<b>${book.title}</b><br><small>${book.author||''}</small><p>${book.genre||'Uncategorized'} · ${book.format||'Other'}</p>${tagHtml}`;c.onclick=()=>openBook(book);return c;}
-  function visibleBooks(){const q=(document.querySelector('#libsearch')?.value||'').trim().toLowerCase();return ordered().filter(b=>{const hay=[b.title,b.author,b.genre,b.format,b.contentRating,...tagsFor(b)].map(v=>String(v||'').toLowerCase()).join(' ');return hay.includes(q)});}
+  function visibleBooks(){const q=(document.querySelector('#libsearch')?.value||'').trim().toLowerCase();return ordered().filter(b=>{const hay=[b.title,b.author,b.genre,b.format,b.contentRating,b.series,...tagsFor(b)].map(v=>String(v||'').toLowerCase()).join(' ');return hay.includes(q)});}
   function renderLibraryOrganized(){
     const mode=select.value,list=visibleBooks();cards.innerHTML='';
     if(mode==='custom'){list.forEach(b=>cards.appendChild(makeCard(b)));return}
