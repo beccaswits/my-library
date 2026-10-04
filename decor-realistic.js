@@ -9,6 +9,8 @@
     assets.bankerLamp = 'Vintage%20Green%20Banker%E2%80%99s%20Lamp.png?v=2';
     assets.crescentMoon = 'Ornate%20Brass%20Crescent%20Moon%20Sculpture.png?v=2';
     assets.antiqueBooks = 'Antique%20Gilded%20Leather%20Book%20Collection.png?v=1';
+    assets.booksCandles = 'Books%20%26%20Candles.png?v=1';
+    assets.booksIvy = 'Books%20%26%20Ivy.png?v=1';
     return assets;
   }
 
@@ -18,6 +20,12 @@
       window.DECOR_LABELS.bankerLamp = 'Green Banker’s Lamp';
       window.DECOR_LABELS.crescentMoon = 'Brass Crescent Moon';
       window.DECOR_LABELS.antiqueBooks = 'Antique Gilded Books';
+      window.DECOR_LABELS.booksCandles = 'Books & Candles';
+      window.DECOR_LABELS.booksIvy = 'Books & Ivy';
+    }
+    if (window.DECOR_SIZES) {
+      window.DECOR_SIZES.booksCandles = {w:125,h:145};
+      window.DECOR_SIZES.booksIvy = {w:135,h:150};
     }
   }
 
@@ -29,7 +37,6 @@
       var src = decodeURIComponent(img.getAttribute('src') || img.src || '');
       var factor = 1;
       if (/pothos-realistic\.png/i.test(src) || /globe-realistic\.png/i.test(src) || /cat-realistic\.png/i.test(src)) factor = 1.18;
-      // Increase only the antique book stack by an additional 15% from its approved size.
       if (/Antique Gilded Leather Book Collection\.png/i.test(src)) factor = 2.185;
       if (factor === 1 || img.dataset.finalSizeFix === '1') return;
 
