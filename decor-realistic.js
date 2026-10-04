@@ -22,23 +22,19 @@
       window.DECOR_LABELS.antiqueBooks = 'Antique Gilded Books';
     }
     if (window.DECOR_SIZES) {
-      // Increase these three photorealistic pieces by 18% from their prior size.
-      ['pothos','globe','cat'].forEach(function(type) {
-        var current = window.DECOR_SIZES[type];
-        if (current && !current._realistic18) {
-          window.DECOR_SIZES[type] = {
-            w: Math.round(current.w * 1.18),
-            h: Math.round(current.h * 1.18),
-            _realistic18: true
-          };
-        }
-      });
+      // Final photorealistic sizing overrides.
+      // Cat, globe, and pothos are intentionally larger than the previous pass.
+      window.DECOR_SIZES.pothos = {w:126,h:174};
+      window.DECOR_SIZES.globe = {w:126,h:174};
+      window.DECOR_SIZES.cat = {w:116,h:174};
 
+      // Keep these approved sizes unchanged.
       window.DECOR_SIZES.armillary = {w:104,h:142};
-      // Slightly reduce the banker lamp while leaving all other approved pieces unchanged.
       window.DECOR_SIZES.bankerLamp = {w:98,h:112};
       window.DECOR_SIZES.crescentMoon = {w:82,h:126};
-      window.DECOR_SIZES.antiqueBooks = {w:160,h:150};
+
+      // Make the decorative book collection comparable in height to shelf books.
+      window.DECOR_SIZES.antiqueBooks = {w:205,h:190};
     }
   }
 
