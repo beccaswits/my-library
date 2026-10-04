@@ -2,6 +2,13 @@
 (function () {
   function applyRealisticDecor(assets) {
     if (!assets) return assets;
+
+    // Remove the original illustrated decor that is no longer part of the collection.
+    [
+      'fern','candle','candlestick','lamp','lantern','bust','hourglass','crystal',
+      'bookstack','bookend','botanical','vase','driedflowers','teacup','jar','cloche'
+    ].forEach(function (key) { delete assets[key]; });
+
     assets.globe = 'globe-realistic.png?v=4';
     assets.pothos = 'pothos-realistic.png?v=3';
     assets.cat = 'cat-realistic.png?v=3';
