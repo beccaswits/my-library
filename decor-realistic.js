@@ -29,7 +29,8 @@
       var src = decodeURIComponent(img.getAttribute('src') || img.src || '');
       var factor = 1;
       if (/pothos-realistic\.png/i.test(src) || /globe-realistic\.png/i.test(src) || /cat-realistic\.png/i.test(src)) factor = 1.18;
-      if (/Antique Gilded Leather Book Collection\.png/i.test(src)) factor = 1.9;
+      // Increase only the antique book stack by an additional 15% from its approved size.
+      if (/Antique Gilded Leather Book Collection\.png/i.test(src)) factor = 2.185;
       if (factor === 1 || img.dataset.finalSizeFix === '1') return;
 
       var w = parseFloat(img.style.width) || img.getBoundingClientRect().width;
