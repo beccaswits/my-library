@@ -30,13 +30,12 @@
   `;
   document.head.appendChild(style);
 
-  // Replace the original prototype cards with the real stats dashboard container.
   const oldCards=stats.querySelector('.cards');
   const grid=document.createElement('div');grid.className='stats-reading-grid';grid.id='statsReadingGrid';
   if(oldCards)oldCards.replaceWith(grid);else stats.appendChild(grid);
 
   const card=document.createElement('section');card.className='reading-chart-card';
-  card.innerHTML=`<h2>Overall Reading Progress</h2><div class="reading-chart-sub">Your entire library · Read vs. Unread</div><div class="reading-chart-layout"><div class="reading-donut" id="overallReadingDonut"><div class="reading-donut-center"><div class="reading-donut-total" id="overallBookTotal">0</div><div class="reading-donut-label">TOTAL BOOKS</div></div></div><div><div class="reading-legend"><div><div class="reading-legend-row"><span class="reading-marker" id="readMarker"></span><span class="reading-legend-name">Read</span><span class="reading-legend-count" id="overallReadCount">0</span></div><div class="reading-percent" id="overallReadPercent">0%</div></div><div><div class="reading-legend-row"><span class="reading-marker" id="unreadMarker"></span><span class="reading-legend-name">Unread</span><span class="reading-legend-count" id="overallUnreadCount">0</span></div><div class="reading-percent" id="overallUnreadPercent">0%</div></div></div><div class="reading-color-controls"><label class="reading-color-control">Read color <input id="overallReadColor" type="color"></label><label class="reading-color-control">Unread color <input id="overallUnreadColor" type="color"></label></div></div></div>`;
+  card.innerHTML=`<h2>Overall Reading Progress</h2><div class="reading-chart-sub">Your entire library · Read vs. Unread</div><div class="reading-chart-layout"><div class="reading-donut" id="overallReadingDonut"><div class="reading-donut-center"><div class="reading-donut-total" id="overallBookTotal">0</div><div class="reading-donut-label">TOTAL BOOKS</div></div></div><div><div class="reading-legend"><div><div class="reading-legend-row"><span class="reading-marker" id="readMarker"></span><span class="reading-legend-name">Read</span><span class="reading-legend-count" id="overallReadCount">0</span></div><div class="reading-percent" id="overallReadPercent">0%</div></div><div><div class="reading-legend-row"><span class="reading-marker" id="unreadMarker"></span><span class="reading-legend-name">Unread</span><span class="reading-legend-count" id="overallUnreadCount">0</span></div><div class="reading-percent" id="overallUnreadPercent">0%</div></div></div><div class="reading-color-controls"><label class="reading-color-control">Read <input id="overallReadColor" type="color"></label><label class="reading-color-control">Unread <input id="overallUnreadColor" type="color"></label></div></div></div>`;
   grid.appendChild(card);
 
   const donut=card.querySelector('#overallReadingDonut'),readColor=card.querySelector('#overallReadColor'),unreadColor=card.querySelector('#overallUnreadColor');
@@ -51,8 +50,6 @@
   }
   function saveColors(){localStorage.setItem(KEY,JSON.stringify(colors));render()}
   readColor.oninput=e=>{colors.read=e.target.value;saveColors()};unreadColor.oninput=e=>{colors.unread=e.target.value;saveColors()};
-
-  // Refresh whenever Stats is opened and after book data changes elsewhere in the app.
   document.querySelectorAll('.nav button').forEach(btn=>{if(btn.dataset.view==='stats')btn.addEventListener('click',()=>setTimeout(render,0))});
   window.addEventListener('library-stats-updated',render);
   const obs=new MutationObserver(()=>{if(stats.classList.contains('active'))render()});
