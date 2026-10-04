@@ -4,7 +4,7 @@ function startDecor(){
  if(typeof window.renderShelves!=='function'||!window.DECOR_ASSETS)return;
  const LAYOUT_KEY='bookShelfLayout',BACKUP_KEY='bookShelfLayoutBackup',COUNT_KEY='libraryShelfCount';
  const SORT_SHELF_SIZE=25;
- const DECOR_BASELINE={pothos:-3,fern:-3,candle:-2,candlestick:-2,lamp:-3,lantern:-3,bust:-4,globe:-4,hourglass:-3,crystal:-3,bookstack:-3,bookend:-2,botanical:-3,vase:-2,driedflowers:-3,teacup:1,jar:0,cloche:-2,cat:0};
+ const DECOR_BASELINE={pothos:-3,fern:-3,candle:-2,candlestick:-2,lamp:-3,lantern:-12,bust:-4,globe:-4,hourglass:-11,crystal:-3,bookstack:-3,bookend:-12,botanical:-3,vase:-2,driedflowers:-3,teacup:1,jar:0,cloche:-12,cat:-13};
  let decorItems=JSON.parse(localStorage.getItem('libraryDecor')||'null');if(!Array.isArray(decorItems))decorItems=[{id:'d1',type:'pothos',shelf:0,pos:6},{id:'d2',type:'candle',shelf:1,pos:6},{id:'d3',type:'fern',shelf:2,pos:6}];
  function readObj(key){try{const x=JSON.parse(localStorage.getItem(key)||'null');return x&&typeof x==='object'&&!Array.isArray(x)?x:null}catch(e){return null}}
  let primary=readObj(LAYOUT_KEY),backup=readObj(BACKUP_KEY);let layout=(!primary&&backup)?backup:(!backup&&primary)?primary:(primary&&backup&&Object.keys(backup).length>Object.keys(primary).length?backup:primary);
