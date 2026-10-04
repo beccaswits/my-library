@@ -73,10 +73,14 @@
   }
 
   function runFixes(){fixRenderedSizes(document);fixDrawerLabels();}
-  function installWatcher(){
-    setTimeout(runFixes,100);setTimeout(runFixes,500);setTimeout(runFixes,1200);
-    if(document.body)new MutationObserver(function(){runFixes();}).observe(document.body,{childList:true,subtree:true});
-    else document.addEventListener('DOMContentLoaded',installWatcher,{once:true});
+  function installFixes(){
+    // Run a few bounded passes while the shelf/drawer initializes. Do not observe
+    // DOM mutations continuously: changing drawer labels can itself trigger
+    // mutations and create an infinite callback loop that freezes the page.
+    setTimeout(runFixes,100);
+    setTimeout(runFixes,500);
+    setTimeout(runFixes,1200);
+    setTimeout(runFixes,2500);
   }
 
   if(window.DECOR_ASSETS){applyRealisticDecor(window.DECOR_ASSETS);addMetadata();}
@@ -84,5 +88,7 @@
     let storedAssets;
     Object.defineProperty(window,'DECOR_ASSETS',{configurable:true,enumerable:true,get:function(){return storedAssets;},set:function(value){storedAssets=applyRealisticDecor(value);setTimeout(addMetadata,0);}});
   }
-  installWatcher();
+
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',installFixes,{once:true});
+  else installFixes();
 })();
