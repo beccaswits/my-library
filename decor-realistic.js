@@ -28,13 +28,16 @@
 
   function addMetadata() {
     if (window.DECOR_LABELS) {
-      window.DECOR_LABELS.armillary = 'Armillary Sphere';
-      window.DECOR_LABELS.bankerLamp = 'Green Banker’s Lamp';
-      window.DECOR_LABELS.crescentMoon = 'Brass Crescent Moon';
-      window.DECOR_LABELS.antiqueBooks = 'Antique Gilded Books';
+      window.DECOR_LABELS.pothos = 'Trailing Pothos';
+      window.DECOR_LABELS.globe = 'Vintage Globe';
+      window.DECOR_LABELS.cat = 'Library Cat';
+      window.DECOR_LABELS.armillary = 'Armillary';
+      window.DECOR_LABELS.bankerLamp = 'Banker Lamp';
+      window.DECOR_LABELS.crescentMoon = 'Crescent Moon';
+      window.DECOR_LABELS.antiqueBooks = 'Antique Books';
       window.DECOR_LABELS.booksCandles = 'Books & Candles';
       window.DECOR_LABELS.booksIvy = 'Books & Ivy';
-      window.DECOR_LABELS.realisticHourglass = 'Antique Hourglass';
+      window.DECOR_LABELS.realisticHourglass = 'Hourglass';
       window.DECOR_LABELS.crystalBall = 'Crystal Ball';
       window.DECOR_LABELS.hangingPottedPlant = 'Hanging Potted Plant';
       window.DECOR_LABELS.vintageCamera = 'Vintage Camera';
