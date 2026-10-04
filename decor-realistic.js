@@ -5,9 +5,9 @@
     assets.globe = 'globe-realistic.png?v=4';
     assets.pothos = 'pothos-realistic.png?v=3';
     assets.cat = 'cat-realistic.png?v=3';
-    assets.armillary = 'Armillary%20Sphere.png?v=2';
-    assets.bankerLamp = 'Vintage%20Green%20Banker%E2%80%99s%20Lamp.png?v=2';
-    assets.crescentMoon = 'Ornate%20Brass%20Crescent%20Moon%20Sculpture.png?v=2';
+    assets.armillary = 'armillary_sphere.png?v=3';
+    assets.bankerLamp = 'green_bankers_lamp.png?v=3';
+    assets.crescentMoon = 'crescent_moon.png?v=3';
     assets.antiqueBooks = 'Antique%20Gilded%20Leather%20Book%20Collection.png?v=1';
     assets.booksCandles = 'Books%20%26%20Candles.png?v=1';
     assets.booksIvy = 'Books%20%26%20Ivy.png?v=1';
