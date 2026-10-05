@@ -50,20 +50,25 @@
   // shelf-drag.js applies a 1.24 base render scale (plus any REALISTIC_SCALE).
   // These dimensions mirror that fresh-load result so editing cannot make them jump.
   const LOCKED_RENDER_SIZES={
-    pothos:{w:152,h:220}, globe:{w:158,h:208}, cat:{w:105,h:170},
-    antiqueBooks:{w:314,h:268},
-    booksCandles:{w:318,h:369}, booksIvy:{w:318,h:353},
-    crystalBall:{w:139,h:164}
+    // Tuned shelf display sizes. These are the final visible dimensions and
+    // are reapplied after every shelf rerender so they never jump around.
+    pothos:{w:170,h:245},
+    globe:{w:185,h:245},
+    cat:{w:145,h:225},
+    antiqueBooks:{w:223,h:190},
+    booksCandles:{w:164,h:190},
+    booksIvy:{w:190,h:210},
+    crystalBall:{w:108,h:128},
+    vintageCamera:{w:88,h:105},
+    mushroomCloche:{w:96,h:112},
+    hangingPottedPlant:{w:225,h:272}
   };
   function fixRenderedSizes(root) {
     var scope=root&&root.querySelectorAll?root:document;
     scope.querySelectorAll('img.decor').forEach(function(img){
       var key=decorKey(img),size=key&&LOCKED_RENDER_SIZES[key]; if(!size)return;
-      // The shelf CSS caps decor at 190px high. On a fresh load the browser scales
-      // oversized images down proportionally to that cap; preserve that visible size.
       var w=size.w,h=size.h;
-      if(h>190){w=Math.round(w*(190/h));h=190;}
-      img.style.width=w+'px'; img.style.height=h+'px'; img.style.maxHeight='190px'; img.dataset.finalSizeFix='1';
+      img.style.width=w+'px'; img.style.height=h+'px'; img.style.maxHeight='none'; img.dataset.finalSizeFix='1';
       var wrap=img.closest('.decor-wrap'); if(wrap)wrap.style.width=Math.round(w*.82)+'px';
     });
   }
