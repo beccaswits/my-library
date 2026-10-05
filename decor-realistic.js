@@ -8,108 +8,67 @@
     hangingPottedPlant:'Hanging Potted Plant', vintageCamera:'Vintage Camera',
     mushroomCloche:'Mushroom Cloche'
   };
+  const FINAL_SIZES = {
+    pothos:{w:152,h:220}, globe:{w:158,h:208}, cat:{w:105,h:170},
+    antiqueBooks:{w:241,h:206},
+    booksCandles:{w:318,h:369}, booksIvy:{w:318,h:353},
+    crystalBall:{w:139,h:164}
+  };
 
   function applyRealisticDecor(assets) {
     if (!assets) return assets;
     ['fern','candle','candlestick','lamp','lantern','bust','hourglass','crystal','bookstack','bookend','botanical','vase','driedflowers','teacup','jar','cloche'].forEach(function (key) { delete assets[key]; });
-    assets.globe='globe-realistic.png?v=4';
-    assets.pothos='pothos-realistic.png?v=3';
-    assets.cat='cat-realistic.png?v=3';
-    assets.armillary='armillary_sphere.png?v=3';
-    assets.bankerLamp='green_bankers_lamp.png?v=3';
-    assets.crescentMoon='crescent_moon.png?v=3';
-    assets.antiqueBooks='Antique%20Gilded%20Leather%20Book%20Collection.png?v=1';
-    assets.booksCandles='Books%20%26%20Candles.png?v=1';
-    assets.booksIvy='Books%20%26%20Ivy.png?v=1';
-    assets.realisticHourglass='hourglass.png?v=1';
-    assets.crystalBall='crystal_ball.png?v=1';
-    assets.hangingPottedPlant='hanging_potted_plant.png?v=1';
-    assets.vintageCamera='vintage_camera.png?v=1';
-    assets.mushroomCloche='mushroom_cloche.png?v=1';
+    assets.globe='globe-realistic.png?v=4'; assets.pothos='pothos-realistic.png?v=3'; assets.cat='cat-realistic.png?v=3';
+    assets.armillary='armillary_sphere.png?v=3'; assets.bankerLamp='green_bankers_lamp.png?v=3'; assets.crescentMoon='crescent_moon.png?v=3';
+    assets.antiqueBooks='Antique%20Gilded%20Leather%20Book%20Collection.png?v=1'; assets.booksCandles='Books%20%26%20Candles.png?v=1'; assets.booksIvy='Books%20%26%20Ivy.png?v=1';
+    assets.realisticHourglass='hourglass.png?v=1'; assets.crystalBall='crystal_ball.png?v=1'; assets.hangingPottedPlant='hanging_potted_plant.png?v=1';
+    assets.vintageCamera='vintage_camera.png?v=1'; assets.mushroomCloche='mushroom_cloche.png?v=1';
     return assets;
   }
 
   function addMetadata() {
     if (window.DECOR_LABELS) Object.keys(CLEAN_LABELS).forEach(function(k){ window.DECOR_LABELS[k]=CLEAN_LABELS[k]; });
     if (window.DECOR_SIZES) {
-      window.DECOR_SIZES.booksCandles={w:125,h:145};
-      window.DECOR_SIZES.booksIvy={w:135,h:150};
-      window.DECOR_SIZES.realisticHourglass={w:82,h:142};
-      window.DECOR_SIZES.crystalBall={w:112,h:132};
-      window.DECOR_SIZES.hangingPottedPlant={w:120,h:145};
-      window.DECOR_SIZES.vintageCamera={w:105,h:125};
-      window.DECOR_SIZES.mushroomCloche={w:112,h:130};
+      window.DECOR_SIZES.booksCandles={w:125,h:145}; window.DECOR_SIZES.booksIvy={w:135,h:150};
+      window.DECOR_SIZES.realisticHourglass={w:82,h:142}; window.DECOR_SIZES.crystalBall={w:112,h:132};
+      window.DECOR_SIZES.hangingPottedPlant={w:120,h:145}; window.DECOR_SIZES.vintageCamera={w:105,h:125}; window.DECOR_SIZES.mushroomCloche={w:112,h:130};
     }
+  }
+
+  function decorKey(img){
+    var src=decodeURIComponent(img.getAttribute('src')||img.src||'');
+    if(/pothos-realistic/i.test(src))return'pothos'; if(/globe-realistic/i.test(src))return'globe'; if(/cat-realistic/i.test(src))return'cat';
+    if(/armillary_sphere/i.test(src))return'armillary'; if(/green_bankers_lamp/i.test(src))return'bankerLamp'; if(/crescent_moon/i.test(src))return'crescentMoon';
+    if(/Antique Gilded Leather Book Collection/i.test(src))return'antiqueBooks'; if(/Books & Candles/i.test(src))return'booksCandles'; if(/Books & Ivy/i.test(src))return'booksIvy';
+    if(/hourglass\.png/i.test(src))return'realisticHourglass'; if(/crystal_ball/i.test(src))return'crystalBall'; if(/hanging_potted_plant/i.test(src))return'hangingPottedPlant';
+    if(/vintage_camera/i.test(src))return'vintageCamera'; if(/mushroom_cloche/i.test(src))return'mushroomCloche'; return null;
   }
 
   function fixDrawerLabels() {
     addMetadata();
     document.querySelectorAll('.decor-choice').forEach(function(choice){
-      var img=choice.querySelector('img'), label=choice.querySelector('small');
-      if(!img||!label)return;
-      var src=decodeURIComponent(img.getAttribute('src')||'');
-      var key=null;
-      if(/pothos-realistic/i.test(src))key='pothos'; else if(/globe-realistic/i.test(src))key='globe'; else if(/cat-realistic/i.test(src))key='cat';
-      else if(/armillary_sphere/i.test(src))key='armillary'; else if(/green_bankers_lamp/i.test(src))key='bankerLamp'; else if(/crescent_moon/i.test(src))key='crescentMoon';
-      else if(/Antique Gilded Leather Book Collection/i.test(src))key='antiqueBooks'; else if(/Books & Candles/i.test(src))key='booksCandles'; else if(/Books & Ivy/i.test(src))key='booksIvy';
-      else if(/hourglass\.png/i.test(src))key='realisticHourglass'; else if(/crystal_ball/i.test(src))key='crystalBall'; else if(/hanging_potted_plant/i.test(src))key='hangingPottedPlant';
-      else if(/vintage_camera/i.test(src))key='vintageCamera'; else if(/mushroom_cloche/i.test(src))key='mushroomCloche';
-      if(key&&CLEAN_LABELS[key]) label.textContent=CLEAN_LABELS[key];
+      var img=choice.querySelector('img'),label=choice.querySelector('small'); if(!img||!label)return;
+      var key=decorKey(img); if(key&&CLEAN_LABELS[key])label.textContent=CLEAN_LABELS[key];
     });
   }
 
   function fixRenderedSizes(root) {
     var scope=root&&root.querySelectorAll?root:document;
     scope.querySelectorAll('img.decor').forEach(function(img){
-      var src=decodeURIComponent(img.getAttribute('src')||img.src||''),factor=1;
-      if(/pothos-realistic\.png/i.test(src)||/globe-realistic\.png/i.test(src)||/cat-realistic\.png/i.test(src))factor=1.18;
-      if(/Antique Gilded Leather Book Collection\.png/i.test(src))factor=2.185;
-      if(factor===1||img.dataset.finalSizeFix==='1')return;
-      var w=parseFloat(img.style.width)||img.getBoundingClientRect().width,h=parseFloat(img.style.height)||img.getBoundingClientRect().height;
-      if(!w||!h)return;
-      img.style.width=Math.round(w*factor)+'px';img.style.height=Math.round(h*factor)+'px';img.style.maxHeight='none';img.dataset.finalSizeFix='1';
-      var wrap=img.closest('.decor-wrap');if(wrap)wrap.style.width=Math.round((w*factor)*.82)+'px';
+      var key=decorKey(img),size=key&&FINAL_SIZES[key]; if(!size)return;
+      img.style.width=size.w+'px'; img.style.height=size.h+'px'; img.style.maxHeight='none'; img.dataset.finalSizeFix='1';
+      var wrap=img.closest('.decor-wrap'); if(wrap)wrap.style.width=Math.round(size.w*.82)+'px';
     });
   }
 
-  function removeLegacyLeaf(){ document.querySelectorAll('.vine').forEach(function(el){el.remove();}); }
+  function removeLegacyLeaf(){document.querySelectorAll('.vine').forEach(function(el){el.remove();});}
   function runFixes(){removeLegacyLeaf();fixRenderedSizes(document);fixDrawerLabels();}
-
-  // shelf-drag.js rebuilds the shelf DOM whenever a book or decor item moves.
-  // Reapply the final photorealistic sizing to every newly rendered decor node,
-  // not only to the nodes that existed during the initial page load.
   let renderFixQueued=false;
-  function queueRenderFix(){
-    if(renderFixQueued)return;
-    renderFixQueued=true;
-    requestAnimationFrame(function(){
-      renderFixQueued=false;
-      runFixes();
-    });
-  }
-  function watchShelfRenders(){
-    var root=document.querySelector('#shelves');
-    if(!root)return;
-    new MutationObserver(function(mutations){
-      if(mutations.some(function(m){return m.addedNodes&&m.addedNodes.length;})) queueRenderFix();
-    }).observe(root,{childList:true,subtree:true});
-  }
-
-  function installFixes(){
-    removeLegacyLeaf();
-    watchShelfRenders();
-    setTimeout(runFixes,100);
-    setTimeout(runFixes,500);
-    setTimeout(runFixes,1200);
-    setTimeout(runFixes,2500);
-  }
+  function queueRenderFix(){if(renderFixQueued)return;renderFixQueued=true;requestAnimationFrame(function(){renderFixQueued=false;runFixes();});}
+  function watchShelfRenders(){var root=document.querySelector('#shelves');if(!root)return;new MutationObserver(function(m){if(m.some(function(x){return x.addedNodes&&x.addedNodes.length;}))queueRenderFix();}).observe(root,{childList:true,subtree:true});}
+  function installFixes(){removeLegacyLeaf();watchShelfRenders();setTimeout(runFixes,100);setTimeout(runFixes,500);setTimeout(runFixes,1200);setTimeout(runFixes,2500);}
 
   if(window.DECOR_ASSETS){applyRealisticDecor(window.DECOR_ASSETS);addMetadata();}
-  else {
-    let storedAssets;
-    Object.defineProperty(window,'DECOR_ASSETS',{configurable:true,enumerable:true,get:function(){return storedAssets;},set:function(value){storedAssets=applyRealisticDecor(value);setTimeout(addMetadata,0);}});
-  }
-
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',installFixes,{once:true});
-  else installFixes();
+  else {let storedAssets;Object.defineProperty(window,'DECOR_ASSETS',{configurable:true,enumerable:true,get:function(){return storedAssets;},set:function(value){storedAssets=applyRealisticDecor(value);setTimeout(addMetadata,0);}});}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',installFixes,{once:true});else installFixes();
 })();
