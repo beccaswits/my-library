@@ -46,20 +46,25 @@
     });
   }
 
-  // Only the three legacy realistic pieces need a post-render enlargement.
-  // Books & Ivy, Books & Candles and Crystal Ball already have their preferred
-  // dimensions in DECOR_SIZES, so shelf-drag.js can render them consistently.
+  // Lock each special decor piece to the exact size produced on a fresh page load.
+  // shelf-drag.js applies a 1.24 base render scale (plus any REALISTIC_SCALE).
+  // These dimensions mirror that fresh-load result so editing cannot make them jump.
+  const LOCKED_RENDER_SIZES={
+    pothos:{w:152,h:220}, globe:{w:158,h:208}, cat:{w:105,h:170},
+    antiqueBooks:{w:314,h:268},
+    booksCandles:{w:318,h:369}, booksIvy:{w:318,h:353},
+    crystalBall:{w:139,h:164}
+  };
   function fixRenderedSizes(root) {
     var scope=root&&root.querySelectorAll?root:document;
     scope.querySelectorAll('img.decor').forEach(function(img){
-      var key=decorKey(img),factor=1;
-      if(key==='pothos'||key==='globe'||key==='cat')factor=1.18;
-      if(key==='antiqueBooks')factor=2.185;
-      if(factor===1||img.dataset.finalSizeFix==='1')return;
-      var w=parseFloat(img.style.width)||img.getBoundingClientRect().width,h=parseFloat(img.style.height)||img.getBoundingClientRect().height;
-      if(!w||!h)return;
-      img.style.width=Math.round(w*factor)+'px'; img.style.height=Math.round(h*factor)+'px'; img.style.maxHeight='none'; img.dataset.finalSizeFix='1';
-      var wrap=img.closest('.decor-wrap'); if(wrap)wrap.style.width=Math.round((w*factor)*.82)+'px';
+      var key=decorKey(img),size=key&&LOCKED_RENDER_SIZES[key]; if(!size)return;
+      // The shelf CSS caps decor at 190px high. On a fresh load the browser scales
+      // oversized images down proportionally to that cap; preserve that visible size.
+      var w=size.w,h=size.h;
+      if(h>190){w=Math.round(w*(190/h));h=190;}
+      img.style.width=w+'px'; img.style.height=h+'px'; img.style.maxHeight='190px'; img.dataset.finalSizeFix='1';
+      var wrap=img.closest('.decor-wrap'); if(wrap)wrap.style.width=Math.round(w*.82)+'px';
     });
   }
 
