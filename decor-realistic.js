@@ -8,12 +8,6 @@
     hangingPottedPlant:'Hanging Potted Plant', vintageCamera:'Vintage Camera',
     mushroomCloche:'Mushroom Cloche'
   };
-  const FINAL_SIZES = {
-    pothos:{w:152,h:220}, globe:{w:158,h:208}, cat:{w:105,h:170},
-    antiqueBooks:{w:241,h:206},
-    booksCandles:{w:318,h:369}, booksIvy:{w:318,h:353},
-    crystalBall:{w:139,h:164}
-  };
 
   function applyRealisticDecor(assets) {
     if (!assets) return assets;
@@ -52,12 +46,20 @@
     });
   }
 
+  // Only the three legacy realistic pieces need a post-render enlargement.
+  // Books & Ivy, Books & Candles and Crystal Ball already have their preferred
+  // dimensions in DECOR_SIZES, so shelf-drag.js can render them consistently.
   function fixRenderedSizes(root) {
     var scope=root&&root.querySelectorAll?root:document;
     scope.querySelectorAll('img.decor').forEach(function(img){
-      var key=decorKey(img),size=key&&FINAL_SIZES[key]; if(!size)return;
-      img.style.width=size.w+'px'; img.style.height=size.h+'px'; img.style.maxHeight='none'; img.dataset.finalSizeFix='1';
-      var wrap=img.closest('.decor-wrap'); if(wrap)wrap.style.width=Math.round(size.w*.82)+'px';
+      var key=decorKey(img),factor=1;
+      if(key==='pothos'||key==='globe'||key==='cat')factor=1.18;
+      if(key==='antiqueBooks')factor=2.185;
+      if(factor===1||img.dataset.finalSizeFix==='1')return;
+      var w=parseFloat(img.style.width)||img.getBoundingClientRect().width,h=parseFloat(img.style.height)||img.getBoundingClientRect().height;
+      if(!w||!h)return;
+      img.style.width=Math.round(w*factor)+'px'; img.style.height=Math.round(h*factor)+'px'; img.style.maxHeight='none'; img.dataset.finalSizeFix='1';
+      var wrap=img.closest('.decor-wrap'); if(wrap)wrap.style.width=Math.round((w*factor)*.82)+'px';
     });
   }
 
