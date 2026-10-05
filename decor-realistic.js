@@ -72,13 +72,32 @@
     });
   }
 
-  function removeLegacyLeaf(){
-    document.querySelectorAll('.vine').forEach(function(el){el.remove();});
+  function removeLegacyLeaf(){ document.querySelectorAll('.vine').forEach(function(el){el.remove();}); }
+  function runFixes(){removeLegacyLeaf();fixRenderedSizes(document);fixDrawerLabels();}
+
+  // shelf-drag.js rebuilds the shelf DOM whenever a book or decor item moves.
+  // Reapply the final photorealistic sizing to every newly rendered decor node,
+  // not only to the nodes that existed during the initial page load.
+  let renderFixQueued=false;
+  function queueRenderFix(){
+    if(renderFixQueued)return;
+    renderFixQueued=true;
+    requestAnimationFrame(function(){
+      renderFixQueued=false;
+      runFixes();
+    });
+  }
+  function watchShelfRenders(){
+    var root=document.querySelector('#shelves');
+    if(!root)return;
+    new MutationObserver(function(mutations){
+      if(mutations.some(function(m){return m.addedNodes&&m.addedNodes.length;})) queueRenderFix();
+    }).observe(root,{childList:true,subtree:true});
   }
 
-  function runFixes(){removeLegacyLeaf();fixRenderedSizes(document);fixDrawerLabels();}
   function installFixes(){
     removeLegacyLeaf();
+    watchShelfRenders();
     setTimeout(runFixes,100);
     setTimeout(runFixes,500);
     setTimeout(runFixes,1200);
