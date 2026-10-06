@@ -17,6 +17,7 @@
  #librarian .result-chips{display:flex;gap:7px;flex-wrap:wrap;margin:14px 0}.result-chip{border:1px solid #927e5266;background:#17352c;border-radius:999px;padding:5px 9px;color:#d7c79f;font-size:11px}
  #librarian .result-section{border-top:1px solid #927e5233;padding-top:13px;margin-top:13px}.result-section b{color:#e7d6ad;font-weight:normal}.result-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:18px}
  #librarian .lib-note{font-size:11px;color:#887a5c;text-align:center;line-height:1.5}
+ #librarian .complete-box{background:#102a23;border:1px solid #a58b5855;border-radius:14px;padding:22px}.complete-head{display:flex;justify-content:space-between;gap:15px;align-items:center}.complete-title{font-size:20px;color:#eadcb8}.complete-copy{font-size:13px;color:#bfb293;line-height:1.5;margin-top:5px}.complete-list{margin-top:14px;padding:12px;background:#0d241e;border-radius:8px;color:#a99b7b;font-size:12px;line-height:1.6}
  #librarian .lib-coming{display:inline-block;border:1px solid #927e5244;border-radius:999px;padding:4px 8px;color:#a99772;font-size:10px;margin-left:8px}
  @media(max-width:650px){#librarian .lib-searchrow{display:grid}#librarian .lib-result-grid{grid-template-columns:1fr}.result-cover{width:145px;margin:auto}}
  `;document.head.appendChild(style);
@@ -28,6 +29,7 @@
    <div class="lib-or">OR SHOW ME THE BOOK</div>
    <label class="photo-drop" for="libPhoto"><b>▧ Upload a photo of the cover</b><br><small>Take a photo in a bookstore or choose one from your device</small><div class="photo-name" id="libPhotoName"></div></label><input id="libPhoto" type="file" accept="image/*" capture="environment" hidden>
   </div>
+  <div class="complete-box"><div class="complete-head"><div><div class="lib-eyebrow">Already on your shelves?</div><div class="complete-title">✦ Complete Book Info</div><div class="complete-copy">Let the Librarian fill in missing details for books you already own — without replacing information you've already entered.</div></div><button class="lib-secondary" id="completeLibraryPreview">Preview</button></div><div class="complete-list" id="completePreview" style="display:none">Future scan: missing author · genre · series & book # · book cover · publication details · themes/tropes<br><b style="color:#d9c9a4;font-weight:normal">You review proposed changes before anything is saved.</b></div></div>
   <div class="lib-result" id="libDemoResult">
    <div class="lib-result-grid"><div class="result-cover">THE<br>BOOK<br>COVER</div><div>
     <div class="result-kicker">THE LIBRARIAN FOUND</div><div class="result-title">A Sample Book</div><div class="result-author">by Sample Author</div>
@@ -40,6 +42,7 @@
   </div>
   <div class="lib-note">Interface preview <span class="lib-coming">AI coming next</span><br>This phase does not send photos or searches anywhere yet, and the preview buttons will not modify your real library.</div>
  </div>`;
+ const completeBtn=root.querySelector('#completeLibraryPreview'),completePreview=root.querySelector('#completePreview');completeBtn.onclick=()=>{const open=completePreview.style.display!=='none';completePreview.style.display=open?'none':'block';completeBtn.textContent=open?'Preview':'Hide preview'};
  const query=root.querySelector('#libAskQuery'),photo=root.querySelector('#libPhoto'),name=root.querySelector('#libPhotoName'),result=root.querySelector('#libDemoResult');
  function preview(e){if(e){e.preventDefault();e.stopPropagation()}result.style.display='block';result.classList.add('show');setTimeout(()=>result.scrollIntoView({behavior:'smooth',block:'nearest'}),20)}
  const askBtn=root.querySelector('#libAskBtn');askBtn.type='button';askBtn.addEventListener('click',preview);query.addEventListener('keydown',e=>{if(e.key==='Enter')preview(e)});
