@@ -41,8 +41,8 @@
   <div class="lib-note">Interface preview <span class="lib-coming">AI coming next</span><br>This phase does not send photos or searches anywhere yet, and the preview buttons will not modify your real library.</div>
  </div>`;
  const query=root.querySelector('#libAskQuery'),photo=root.querySelector('#libPhoto'),name=root.querySelector('#libPhotoName'),result=root.querySelector('#libDemoResult');
- function preview(){result.classList.add('show');result.scrollIntoView({behavior:'smooth',block:'nearest'})}
- root.querySelector('#libAskBtn').onclick=preview;query.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();preview()}};
+ function preview(e){if(e){e.preventDefault();e.stopPropagation()}result.style.display='block';result.classList.add('show');setTimeout(()=>result.scrollIntoView({behavior:'smooth',block:'nearest'}),20)}
+ const askBtn=root.querySelector('#libAskBtn');askBtn.type='button';askBtn.addEventListener('click',preview);query.addEventListener('keydown',e=>{if(e.key==='Enter')preview(e)});
  photo.onchange=()=>{name.textContent=photo.files&&photo.files[0]?'Selected: '+photo.files[0].name:'';if(photo.files&&photo.files[0])preview()};
  root.querySelectorAll('.demo-action').forEach(b=>b.onclick=()=>alert('Preview only — once the AI is connected, this will automatically add the identified book with its title, author, series and book number.'));
 })();
