@@ -52,12 +52,12 @@
   const LOCKED_RENDER_SIZES={
     // Tuned shelf display sizes. These are the final visible dimensions and
     // are reapplied after every shelf rerender so they never jump around.
-    pothos:{w:170,h:245},
+    pothos:{w:205,h:295},
     globe:{w:185,h:245},
     cat:{w:145,h:225},
     antiqueBooks:{w:223,h:190},
-    booksCandles:{w:164,h:190},
-    booksIvy:{w:190,h:210},
+    booksCandles:{w:190,h:220},
+    booksIvy:{w:220,h:243},
     crystalBall:{w:108,h:128},
     vintageCamera:{w:88,h:105},
     mushroomCloche:{w:96,h:112},
