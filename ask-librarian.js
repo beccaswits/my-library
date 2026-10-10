@@ -71,11 +71,47 @@
    const detail=JSON.parse(localStorage.getItem('bookDetailOverrides')||'{}')[b.id]||{};
    const metadata=JSON.parse(localStorage.getItem('librarianMetadata')||'{}')[b.id]||{};
    const existing=k=>['publicationDate','publisher','themes','tropes','synopsis'].includes(k)?metadata[k]:(detail[k]!==undefined?detail[k]:b[k]);
-   const candidates=Object.entries(updates).filter(([k,v])=>{const old=existing(k);return old==null||old===''||old==='Uncategorized'||(Array.isArray(old)&&!old.length)||JSON.stringify(old)!==JSON.stringify(v)});
+   const candidates=Object.entries(updates).filter(([k,v])=>{const old=existing(k);return old==null||old===''||old==='Uncategorized'||old==='Unknown Author'||(Array.isArray(old)&&!old.length)||JSON.stringify(old)!==JSON.stringify(v)});
    if(!candidates.length){review.textContent='No missing fields were found in this response. Your existing details were left unchanged.';return}
-   pending={id:String(b.id),candidates};const title=document.createElement('p');title.textContent='Review suggested changes (existing values are unchecked):';review.appendChild(title);
-   candidates.forEach(([k,v])=>{const label=document.createElement('label');label.style.cssText='display:block;margin:9px 0;font-size:13px';const cb=document.createElement('input');cb.type='checkbox';const old=existing(k);const missing=old==null||old===''||old==='Uncategorized'||(Array.isArray(old)&&!old.length);cb.checked=missing;cb.dataset.field=k;label.append(cb,document.createTextNode(' '+k+(missing?' (missing)':' (existing: '+(Array.isArray(old)?old.join(' · '):old)+')')+' → '+(Array.isArray(v)?v.join(' · '):v)));review.appendChild(label)});
-   const apply=document.createElement('button');apply.className='lib-primary';apply.type='button';apply.textContent='Apply Selected Updates';review.appendChild(apply);
+   pending={id:String(b.id),candidates};
+   const names={title:'Book Title',author:'Author',genre:'Genre',series:'Series',bookNumber:'Book #',publicationDate:'Publication Date',publisher:'Publisher',themes:'Themes',tropes:'Tropes',synopsis:'Spoiler-Free Synopsis'};
+   const missingValue=v=>v==null||v===''||v==='Uncategorized'||v==='Unknown Author'||(Array.isArray(v)&&!v.length);
+   const formatValue=v=>Array.isArray(v)?v.join(' · '):String(v??'');
+   const styleId='librarian-review-styles';if(!document.getElementById(styleId)){const css=document.createElement('style');css.id=styleId;css.textContent=`
+   .lib-review-heading{margin:18px 0 5px;font-size:19px;color:#f0dfb6}
+   .lib-review-caption{margin:0 0 16px;color:#bcae8b;font-size:13px;line-height:1.5}
+   .lib-review-group{margin:15px 0 19px}
+   .lib-review-group h4{font-size:11px;letter-spacing:2px;color:#c7a86b;margin:0 0 10px;text-transform:uppercase;font-weight:normal}
+   .lib-review-card{display:flex;gap:12px;align-items:flex-start;padding:14px;margin:8px 0;border:1px solid #927e5266;background:#102a23;border-radius:9px;cursor:pointer}
+   .lib-review-card:has(input:checked){border-color:#c7a86b88;background:#1a382e}
+   .lib-review-card input{margin-top:4px;accent-color:#c7a86b;width:17px;height:17px;flex-shrink:0}
+   .lib-review-copy{min-width:0;flex:1}
+   .lib-review-label{font-size:15px;color:#f0dfb6;margin-bottom:5px}
+   .lib-review-before{font-size:12px;color:#b9a887;margin-bottom:6px;overflow-wrap:anywhere}
+   .lib-review-after{font-size:13px;line-height:1.55;color:#e6d7b4;overflow-wrap:anywhere;white-space:pre-wrap}
+   .lib-review-status{font-size:10px;letter-spacing:1px;color:#bcae8b;text-transform:uppercase;margin-left:7px}
+   .lib-review-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:18px}
+   .lib-review-count{font-size:12px;color:#c7a86b}
+   `;document.head.appendChild(css)}
+   const heading=document.createElement('h3');heading.className='lib-review-heading';heading.textContent='✦ Librarian’s Research Report';review.appendChild(heading);
+   const intro=document.createElement('p');intro.className='lib-review-caption';intro.textContent='Review the research below. Missing details are preselected; your existing information stays unchanged unless you choose to replace it.';review.appendChild(intro);
+   const missingGroup=document.createElement('section'),existingGroup=document.createElement('section');
+   for(const [group,title] of [[missingGroup,'Fill in missing details'],[existingGroup,'Review existing information']]){group.className='lib-review-group';const h=document.createElement('h4');h.textContent=title;group.appendChild(h);review.appendChild(group)}
+   candidates.forEach(([k,v])=>{const old=existing(k),missing=missingValue(old),group=missing?missingGroup:existingGroup;
+     const label=document.createElement('label');label.className='lib-review-card';const cb=document.createElement('input');cb.type='checkbox';cb.checked=missing;cb.dataset.field=k;
+     const copy=document.createElement('div');copy.className='lib-review-copy';const title=document.createElement('div');title.className='lib-review-label';title.textContent=names[k]||k;
+     const status=document.createElement('span');status.className='lib-review-status';status.textContent=missing?'Missing':'Suggested change';title.appendChild(status);copy.appendChild(title);
+     if(!missing){const before=document.createElement('div');before.className='lib-review-before';before.textContent='Currently: '+formatValue(old);copy.appendChild(before)}
+     const after=document.createElement('div');after.className='lib-review-after';after.textContent=(missing?'Add: ':'Suggested: ')+formatValue(v);copy.appendChild(after);
+     label.append(cb,copy);group.appendChild(label);
+   });
+   if(missingGroup.querySelectorAll('input').length===0)missingGroup.remove();
+   if(existingGroup.querySelectorAll('input').length===0)existingGroup.remove();
+   const actions=document.createElement('div');actions.className='lib-review-actions';review.appendChild(actions);
+   const apply=document.createElement('button');apply.className='lib-primary';apply.type='button';actions.appendChild(apply);
+   const counter=document.createElement('span');counter.className='lib-review-count';actions.appendChild(counter);
+   const updateCount=()=>{const count=review.querySelectorAll('input:checked').length;apply.textContent='Apply '+count+' Selected Update'+(count===1?'':'s');apply.disabled=count===0;counter.textContent=count+' of '+candidates.length+' selected'};
+   review.querySelectorAll('input[type=checkbox]').forEach(cb=>cb.addEventListener('change',updateCount));updateCount();
    apply.onclick=()=>{
      if(!pending||pending.id!==card.dataset.bookId)return;
      const selected=[...review.querySelectorAll('input:checked')].map(x=>x.dataset.field);if(!selected.length)return;
