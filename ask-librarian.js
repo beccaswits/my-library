@@ -66,20 +66,20 @@
    if(!data||typeof data!=='object'||Array.isArray(data)){review.textContent='Expected a JSON object.';return}
    const b=books.find(x=>String(x.id)===String(card.dataset.bookId));if(!b){review.textContent='Book no longer found.';return}
    if(data.title&&String(data.title).trim().toLowerCase()!==String(b.title).trim().toLowerCase()){const notice=document.createElement('div');notice.style.cssText='border:1px solid #c7a86b;padding:12px;border-radius:8px;margin:10px 0;line-height:1.5';const heading=document.createElement('strong');heading.textContent='Please confirm the book identity';const a=document.createElement('p');a.textContent='Your library: '+b.title+' — '+(b.author||'Unknown Author');const z=document.createElement('p');z.textContent='ChatGPT returned: '+data.title+' — '+(data.author||'Unknown Author');const button=document.createElement('button');button.type='button';button.className='lib-secondary';button.textContent='These refer to the same book — continue review';notice.append(heading,a,z,button);review.appendChild(notice);button.onclick=()=>{if(!confirm('Only continue if you have verified these are the same book. Your existing title will not be changed.'))return;const parsed=Object.assign({},data,{title:b.title});bridge.querySelector('#librarianJSON').value=JSON.stringify(parsed,null,2);bridge.querySelector('#reviewLibrarianJSON').click()};return}
-   if(data.author&&b.author&&b.author!=='Unknown Author'&&String(data.author).trim().toLowerCase()!==String(b.author).trim().toLowerCase()){review.textContent='The returned author does not match. Please verify before importing.';return}
-   const updates={};for(const key of supported){const v=data[key];if(v==null||v==='')continue;if(Array.isArray(v)){if(!['themes','tropes'].includes(key)||!v.every(x=>typeof x==='string'))continue;updates[key]=v.slice(0,30)}else if(typeof v==='string'){updates[key]=v.slice(0,2500)}}
+   
+   const updates={};for(const key of ['title',...supported]){const v=data[key];if(v==null||v==='')continue;if(Array.isArray(v)){if(!['themes','tropes'].includes(key)||!v.every(x=>typeof x==='string'))continue;updates[key]=v.slice(0,30)}else if(typeof v==='string'){updates[key]=v.slice(0,2500)}}
    const detail=JSON.parse(localStorage.getItem('bookDetailOverrides')||'{}')[b.id]||{};
    const metadata=JSON.parse(localStorage.getItem('librarianMetadata')||'{}')[b.id]||{};
    const existing=k=>['publicationDate','publisher','themes','tropes','synopsis'].includes(k)?metadata[k]:(detail[k]!==undefined?detail[k]:b[k]);
-   const candidates=Object.entries(updates).filter(([k,v])=>{const old=existing(k);return old==null||old===''||old==='Uncategorized'||(Array.isArray(old)&&!old.length)});
+   const candidates=Object.entries(updates).filter(([k,v])=>{const old=existing(k);return old==null||old===''||old==='Uncategorized'||(Array.isArray(old)&&!old.length)||JSON.stringify(old)!==JSON.stringify(v)});
    if(!candidates.length){review.textContent='No missing fields were found in this response. Your existing details were left unchanged.';return}
-   pending={id:String(b.id),candidates};const title=document.createElement('p');title.textContent='Select the missing fields to save:';review.appendChild(title);
-   candidates.forEach(([k,v])=>{const label=document.createElement('label');label.style.cssText='display:block;margin:9px 0;font-size:13px';const cb=document.createElement('input');cb.type='checkbox';cb.checked=true;cb.dataset.field=k;label.append(cb,document.createTextNode(' '+k+' → '+(Array.isArray(v)?v.join(' · '):v)));review.appendChild(label)});
+   pending={id:String(b.id),candidates};const title=document.createElement('p');title.textContent='Review suggested changes (existing values are unchecked):';review.appendChild(title);
+   candidates.forEach(([k,v])=>{const label=document.createElement('label');label.style.cssText='display:block;margin:9px 0;font-size:13px';const cb=document.createElement('input');cb.type='checkbox';const old=existing(k);const missing=old==null||old===''||old==='Uncategorized'||(Array.isArray(old)&&!old.length);cb.checked=missing;cb.dataset.field=k;label.append(cb,document.createTextNode(' '+k+(missing?' (missing)':' (existing: '+(Array.isArray(old)?old.join(' · '):old)+')')+' → '+(Array.isArray(v)?v.join(' · '):v)));review.appendChild(label)});
    const apply=document.createElement('button');apply.className='lib-primary';apply.type='button';apply.textContent='Apply Selected Updates';review.appendChild(apply);
    apply.onclick=()=>{
      if(!pending||pending.id!==card.dataset.bookId)return;
      const selected=[...review.querySelectorAll('input:checked')].map(x=>x.dataset.field);if(!selected.length)return;
-     if(!confirm('Save '+selected.length+' selected missing fields to this book?'))return;
+     if(!confirm('Save '+selected.length+' selected fields to this book?'))return;
      const allDetails=JSON.parse(localStorage.getItem('bookDetailOverrides')||'{}'),allMeta=JSON.parse(localStorage.getItem('librarianMetadata')||'{}');
      allDetails[b.id]=allDetails[b.id]||{};allMeta[b.id]=allMeta[b.id]||{};
      for(const [k,v] of pending.candidates){if(!selected.includes(k))continue;if(['publicationDate','publisher','themes','tropes','synopsis'].includes(k))allMeta[b.id][k]=v;else{allDetails[b.id][k]=v;b[k]=v}}
