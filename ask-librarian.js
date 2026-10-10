@@ -42,8 +42,51 @@
   </div>
   <div class="lib-note">Interface preview <span class="lib-coming">AI coming next</span><br>This phase does not send photos or searches anywhere yet, and the preview buttons will not modify your real library.</div>
  </div>`;
- window.openLibrarianCompleteBook=function(book){if(!book)return;const card=root.querySelector('#completeBookCard');root.querySelector('#completeBookTitle').textContent=book.title||'Untitled';root.querySelector('#completeBookAuthor').textContent=book.author||'Unknown Author';const missing=[];if(!book.author||book.author==='Unknown Author')missing.push('Author');if(!book.genre||book.genre==='Uncategorized')missing.push('Genre');if(!book.series)missing.push('Series');if(!book.bookNumber)missing.push('Book #');let vis={};try{vis=JSON.parse(localStorage.getItem('bookVisuals')||'{}')}catch(e){}if(!(vis[book.id]&&vis[book.id].cover))missing.push('Book cover');missing.push('Publication details','Themes & tropes');root.querySelector('#completeMissing').textContent=missing.join(' · ');card.dataset.bookId=book.id;card.classList.add('show');root.querySelector('#completePreview').style.display='none';setTimeout(()=>card.scrollIntoView({behavior:'smooth',block:'center'}),20)};
- root.querySelector('#findMissingInfo').onclick=()=>alert('Preview only — when the AI connection is added, the Librarian will research this exact library record and show proposed updates here for your approval.');
+ window.openLibrarianCompleteBook=function(book){if(!book)return;const card=root.querySelector('#completeBookCard');root.querySelector('#completeBookTitle').textContent=book.title||'Untitled';root.querySelector('#completeBookAuthor').textContent=book.author||'Unknown Author';const missing=[];if(!book.author||book.author==='Unknown Author')missing.push('Author');if(!book.genre||book.genre==='Uncategorized')missing.push('Genre');if(!book.series)missing.push('Series');if(!book.bookNumber)missing.push('Book #');let vis={};try{vis=JSON.parse(localStorage.getItem('bookVisuals')||'{}')}catch(e){}if(!(vis[book.id]&&vis[book.id].cover))missing.push('Book cover');missing.push('Publication details','Themes & tropes');root.querySelector('#completeMissing').textContent=missing.join(' · ');card.dataset.bookId=book.id;const oldBridge=card.querySelector('.librarian-bridge');if(oldBridge){oldBridge.style.display='none';oldBridge.querySelector('#librarianJSON').value='';oldBridge.querySelector('#librarianReview').replaceChildren()}card.classList.add('show');root.querySelector('#completePreview').style.display='none';setTimeout(()=>card.scrollIntoView({behavior:'smooth',block:'center'}),20)};
+ 
+ const card=root.querySelector('#completeBookCard');
+ const bridge=document.createElement('div');bridge.className='librarian-bridge';bridge.style.cssText='display:none;margin-top:16px;padding:16px;border:1px solid #927e5266;border-radius:10px;background:#17352c;color:#e6d7b4';
+ bridge.innerHTML='<div class="missing-label">CHATGPT RESEARCH BRIDGE</div><p style="font-size:13px;line-height:1.5">Copy the prepared request into ChatGPT, then paste its JSON answer below. Review each change before saving.</p><button type="button" class="lib-secondary" id="copyBookPrompt">Copy Research Request</button> <button type="button" class="lib-secondary" id="openChatGPT">Open ChatGPT ↗</button><textarea id="librarianJSON" rows="7" placeholder="Paste ChatGPT’s JSON response here…" style="display:block;box-sizing:border-box;width:100%;margin:14px 0;background:#0d241e;color:#eadcb8;border:1px solid #927e5266;border-radius:8px;padding:12px"></textarea><button type="button" class="lib-primary" id="reviewLibrarianJSON">Review Proposed Updates</button><div id="librarianReview" style="margin-top:12px"></div>';
+ card.appendChild(bridge);
+ let researchPrompt='';
+ root.querySelector('#findMissingInfo').onclick=()=>{
+   const id=card.dataset.bookId;const b=(typeof books!=='undefined'&&books.find(x=>String(x.id)===String(id)));if(!b){alert('Book not found. Please reopen it from your shelf.');return}
+   const allowed=['title','author','genre','series','bookNumber','publicationDate','publisher','themes','tropes','synopsis'];
+   researchPrompt='Research this existing book for my personal library. Do not invent facts. Confirm the correct book and author; if ambiguous, explain rather than guess. Return ONLY a valid JSON object (no markdown fences) with keys: title, author, genre, series, bookNumber, publicationDate, publisher, themes, tropes, synopsis. Use strings for scalar fields, arrays of strings for themes and tropes, and null for unknowns or not-applicable values. Synopsis must be spoiler-free. Never include unsupported guesses. Existing book record: '+JSON.stringify({id:b.id,title:b.title,author:b.author,genre:b.genre,series:b.series,bookNumber:b.bookNumber})+'. Prioritize filling these missing fields: '+root.querySelector('#completeMissing').textContent+'. This is research, not a request to edit my library.';
+   bridge.style.display='block';bridge.scrollIntoView({behavior:'smooth',block:'nearest'});
+ };
+ bridge.querySelector('#copyBookPrompt').onclick=async()=>{try{await navigator.clipboard.writeText(researchPrompt);alert('Research request copied! Paste it into ChatGPT.')}catch(e){prompt('Copy this request:',researchPrompt)}};
+ bridge.querySelector('#openChatGPT').onclick=()=>window.open('https://chatgpt.com/','_blank','noopener');
+ const review=bridge.querySelector('#librarianReview');
+ const supported=['author','genre','series','bookNumber','publicationDate','publisher','themes','tropes','synopsis'];
+ let pending=null;
+ bridge.querySelector('#reviewLibrarianJSON').onclick=()=>{
+   pending=null;review.replaceChildren();
+   let data;try{let raw=bridge.querySelector('#librarianJSON').value.trim().replace(/^\x60\x60\x60(?:json)?\\s*/i,'').replace(/\\s*\x60\x60\x60$/,'');data=JSON.parse(raw)}catch(e){review.textContent='Please paste a valid JSON result from ChatGPT.';return}
+   if(!data||typeof data!=='object'||Array.isArray(data)){review.textContent='Expected a JSON object.';return}
+   const b=books.find(x=>String(x.id)===String(card.dataset.bookId));if(!b){review.textContent='Book no longer found.';return}
+   if(data.title&&String(data.title).trim().toLowerCase()!==String(b.title).trim().toLowerCase()){review.textContent='The returned title does not match this book. Please verify the edition before importing.';return}
+   if(data.author&&b.author&&b.author!=='Unknown Author'&&String(data.author).trim().toLowerCase()!==String(b.author).trim().toLowerCase()){review.textContent='The returned author does not match. Please verify before importing.';return}
+   const updates={};for(const key of supported){const v=data[key];if(v==null||v==='')continue;if(Array.isArray(v)){if(!['themes','tropes'].includes(key)||!v.every(x=>typeof x==='string'))continue;updates[key]=v.slice(0,30)}else if(typeof v==='string'){updates[key]=v.slice(0,2500)}}
+   const detail=JSON.parse(localStorage.getItem('bookDetailOverrides')||'{}')[b.id]||{};
+   const metadata=JSON.parse(localStorage.getItem('librarianMetadata')||'{}')[b.id]||{};
+   const existing=k=>['publicationDate','publisher','themes','tropes','synopsis'].includes(k)?metadata[k]:(detail[k]!==undefined?detail[k]:b[k]);
+   const candidates=Object.entries(updates).filter(([k,v])=>{const old=existing(k);return old==null||old===''||old==='Uncategorized'||(Array.isArray(old)&&!old.length)});
+   if(!candidates.length){review.textContent='No missing fields were found in this response. Your existing details were left unchanged.';return}
+   pending={id:String(b.id),candidates};const title=document.createElement('p');title.textContent='Select the missing fields to save:';review.appendChild(title);
+   candidates.forEach(([k,v])=>{const label=document.createElement('label');label.style.cssText='display:block;margin:9px 0;font-size:13px';const cb=document.createElement('input');cb.type='checkbox';cb.checked=true;cb.dataset.field=k;label.append(cb,document.createTextNode(' '+k+' → '+(Array.isArray(v)?v.join(' · '):v)));review.appendChild(label)});
+   const apply=document.createElement('button');apply.className='lib-primary';apply.type='button';apply.textContent='Apply Selected Updates';review.appendChild(apply);
+   apply.onclick=()=>{
+     if(!pending||pending.id!==card.dataset.bookId)return;
+     const selected=[...review.querySelectorAll('input:checked')].map(x=>x.dataset.field);if(!selected.length)return;
+     if(!confirm('Save '+selected.length+' selected missing fields to this book?'))return;
+     const allDetails=JSON.parse(localStorage.getItem('bookDetailOverrides')||'{}'),allMeta=JSON.parse(localStorage.getItem('librarianMetadata')||'{}');
+     allDetails[b.id]=allDetails[b.id]||{};allMeta[b.id]=allMeta[b.id]||{};
+     for(const [k,v] of pending.candidates){if(!selected.includes(k))continue;if(['publicationDate','publisher','themes','tropes','synopsis'].includes(k))allMeta[b.id][k]=v;else{allDetails[b.id][k]=v;b[k]=v}}
+     try{localStorage.setItem('bookDetailOverrides',JSON.stringify(allDetails));localStorage.setItem('librarianMetadata',JSON.stringify(allMeta));review.textContent='✓ Selected updates saved. Reopen this book to see its updated details.';pending=null}catch(e){alert('Unable to save updates in browser storage.')}
+   };
+ };
+
  const completeBtn=root.querySelector('#completeLibraryPreview'),completePreview=root.querySelector('#completePreview');completeBtn.onclick=()=>{const open=completePreview.style.display!=='none';completePreview.style.display=open?'none':'block';completeBtn.textContent=open?'Preview':'Hide preview'};
  const query=root.querySelector('#libAskQuery'),photo=root.querySelector('#libPhoto'),name=root.querySelector('#libPhotoName'),result=root.querySelector('#libDemoResult');
  function preview(e){if(e){e.preventDefault();e.stopPropagation()}result.style.display='block';result.classList.add('show');setTimeout(()=>result.scrollIntoView({behavior:'smooth',block:'nearest'}),20)}
