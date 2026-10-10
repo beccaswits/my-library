@@ -52,13 +52,13 @@
  root.querySelector('#findMissingInfo').onclick=()=>{
    const id=card.dataset.bookId;const b=(typeof books!=='undefined'&&books.find(x=>String(x.id)===String(id)));if(!b){alert('Book not found. Please reopen it from your shelf.');return}
    const allowed=['title','author','genre','series','bookNumber','publicationDate','publisher','themes','tropes','synopsis'];
-   researchPrompt='Research this existing book for my personal library. Do not invent facts. Confirm the correct book and author; if ambiguous, explain rather than guess. Return ONLY a valid JSON object (no markdown fences) with keys: title, author, genre, series, bookNumber, publicationDate, publisher, themes, tropes, synopsis. Use strings for scalar fields, arrays of strings for themes and tropes, and null for unknowns or not-applicable values. Synopsis must be spoiler-free. Never include unsupported guesses. Existing book record: '+JSON.stringify({id:b.id,title:b.title,author:b.author,genre:b.genre,series:b.series,bookNumber:b.bookNumber})+'. Prioritize filling these missing fields: '+root.querySelector('#completeMissing').textContent+'. This is research, not a request to edit my library.';
+   researchPrompt='Research this existing book for my personal library. Do not invent facts. Confirm the correct book and author; if ambiguous, explain rather than guess. Return ONLY a valid JSON object (no markdown fences) with keys: title, author, genre, series, bookNumber, publicationDate, publisher, themes, tropes, synopsis, coverUrl. For coverUrl, return a verified direct HTTPS image URL for the correct edition or null; never invent a URL. Use strings for scalar fields, arrays of strings for themes and tropes, and null for unknowns or not-applicable values. Synopsis must be spoiler-free. Never include unsupported guesses. Existing book record: '+JSON.stringify({id:b.id,title:b.title,author:b.author,genre:b.genre,series:b.series,bookNumber:b.bookNumber})+'. Prioritize filling these missing fields: '+root.querySelector('#completeMissing').textContent+'. This is research, not a request to edit my library.';
    bridge.style.display='block';bridge.scrollIntoView({behavior:'smooth',block:'nearest'});
  };
  bridge.querySelector('#copyBookPrompt').onclick=async()=>{try{await navigator.clipboard.writeText(researchPrompt);alert('Research request copied! Paste it into ChatGPT.')}catch(e){prompt('Copy this request:',researchPrompt)}};
  bridge.querySelector('#openChatGPT').onclick=()=>window.open('https://chatgpt.com/','_blank','noopener');
  const review=bridge.querySelector('#librarianReview');
- const supported=['author','genre','series','bookNumber','publicationDate','publisher','themes','tropes','synopsis'];
+ const supported=['author','genre','series','bookNumber','publicationDate','publisher','themes','tropes','synopsis','coverUrl'];
  let pending=null;
  bridge.querySelector('#reviewLibrarianJSON').onclick=()=>{
    pending=null;review.replaceChildren();
@@ -70,11 +70,13 @@
    const updates={};for(const key of ['title',...supported]){const v=data[key];if(v==null||v==='')continue;if(Array.isArray(v)){if(!['themes','tropes'].includes(key)||!v.every(x=>typeof x==='string'))continue;updates[key]=v.slice(0,30)}else if(typeof v==='string'){updates[key]=v.slice(0,2500)}}
    const detail=JSON.parse(localStorage.getItem('bookDetailOverrides')||'{}')[b.id]||{};
    const metadata=JSON.parse(localStorage.getItem('librarianMetadata')||'{}')[b.id]||{};
-   const existing=k=>['publicationDate','publisher','themes','tropes','synopsis'].includes(k)?metadata[k]:(detail[k]!==undefined?detail[k]:b[k]);
+   const currentCover=(JSON.parse(localStorage.getItem('bookVisuals')||'{}')[b.id]||{}).cover;
+   const existing=k=>k==='coverUrl'?currentCover:['publicationDate','publisher','themes','tropes','synopsis'].includes(k)?metadata[k]:(detail[k]!==undefined?detail[k]:b[k]);
+   if(updates.coverUrl){try{const url=new URL(updates.coverUrl);if(url.protocol!=='https:'||url.username||url.password||updates.coverUrl.length>2000)delete updates.coverUrl}catch(e){delete updates.coverUrl}}
    const candidates=Object.entries(updates).filter(([k,v])=>{const old=existing(k);return old==null||old===''||old==='Uncategorized'||old==='Unknown Author'||(Array.isArray(old)&&!old.length)||JSON.stringify(old)!==JSON.stringify(v)});
    if(!candidates.length){review.textContent='No missing fields were found in this response. Your existing details were left unchanged.';return}
    pending={id:String(b.id),candidates};
-   const names={title:'Book Title',author:'Author',genre:'Genre',series:'Series',bookNumber:'Book #',publicationDate:'Publication Date',publisher:'Publisher',themes:'Themes',tropes:'Tropes',synopsis:'Spoiler-Free Synopsis'};
+   const names={coverUrl:'Book Cover',title:'Book Title',author:'Author',genre:'Genre',series:'Series',bookNumber:'Book #',publicationDate:'Publication Date',publisher:'Publisher',themes:'Themes',tropes:'Tropes',synopsis:'Spoiler-Free Synopsis'};
    const missingValue=v=>v==null||v===''||v==='Uncategorized'||v==='Unknown Author'||(Array.isArray(v)&&!v.length);
    const formatValue=v=>Array.isArray(v)?v.join(' · '):String(v??'');
    const styleId='librarian-review-styles';if(!document.getElementById(styleId)){const css=document.createElement('style');css.id=styleId;css.textContent=`
@@ -103,6 +105,7 @@
      const status=document.createElement('span');status.className='lib-review-status';status.textContent=missing?'Missing':'Suggested change';title.appendChild(status);copy.appendChild(title);
      if(!missing){const before=document.createElement('div');before.className='lib-review-before';before.textContent='Currently: '+formatValue(old);copy.appendChild(before)}
      const after=document.createElement('div');after.className='lib-review-after';after.textContent=(missing?'Add: ':'Suggested: ')+formatValue(v);copy.appendChild(after);
+     if(k==='coverUrl'){after.textContent='Suggested cover — check that the artwork matches your edition.';const img=document.createElement('img');img.src=v;img.alt='Suggested cover for '+b.title;img.referrerPolicy='no-referrer';img.loading='lazy';img.style.cssText='display:block;max-width:155px;max-height:225px;object-fit:contain;margin:10px 0;border:1px solid #927e5266;border-radius:6px';img.onerror=()=>{img.style.display='none';cb.checked=false;cb.disabled=true;const msg=document.createElement('p');msg.textContent='Cover could not load. You can still upload your own cover in the book popup.';copy.appendChild(msg);if(typeof updateCount==='function')updateCount()};copy.appendChild(img);const url=document.createElement('div');url.className='lib-review-before';url.textContent=v;copy.appendChild(url)}
      label.append(cb,copy);group.appendChild(label);
    });
    if(missingGroup.querySelectorAll('input').length===0)missingGroup.remove();
@@ -116,10 +119,10 @@
      if(!pending||pending.id!==card.dataset.bookId)return;
      const selected=[...review.querySelectorAll('input:checked')].map(x=>x.dataset.field);if(!selected.length)return;
      if(!confirm('Save '+selected.length+' selected fields to this book?'))return;
-     const allDetails=JSON.parse(localStorage.getItem('bookDetailOverrides')||'{}'),allMeta=JSON.parse(localStorage.getItem('librarianMetadata')||'{}');
+     const allDetails=JSON.parse(localStorage.getItem('bookDetailOverrides')||'{}'),allMeta=JSON.parse(localStorage.getItem('librarianMetadata')||'{}'),allVisuals=JSON.parse(localStorage.getItem('bookVisuals')||'{}');
      allDetails[b.id]=allDetails[b.id]||{};allMeta[b.id]=allMeta[b.id]||{};
-     for(const [k,v] of pending.candidates){if(!selected.includes(k))continue;if(['publicationDate','publisher','themes','tropes','synopsis'].includes(k))allMeta[b.id][k]=v;else{allDetails[b.id][k]=v;b[k]=v}}
-     try{localStorage.setItem('bookDetailOverrides',JSON.stringify(allDetails));localStorage.setItem('librarianMetadata',JSON.stringify(allMeta));review.textContent='✓ Selected updates saved. Reopen this book to see its updated details.';pending=null}catch(e){alert('Unable to save updates in browser storage.')}
+     for(const [k,v] of pending.candidates){if(!selected.includes(k))continue;if(k==='coverUrl'){allVisuals[b.id]=allVisuals[b.id]||{};allVisuals[b.id].cover=v}else if(['publicationDate','publisher','themes','tropes','synopsis'].includes(k))allMeta[b.id][k]=v;else{allDetails[b.id][k]=v;b[k]=v}}
+     try{localStorage.setItem('bookDetailOverrides',JSON.stringify(allDetails));localStorage.setItem('librarianMetadata',JSON.stringify(allMeta));localStorage.setItem('bookVisuals',JSON.stringify(allVisuals));review.textContent='✓ Selected updates saved. Reopen this book to see its updated details.';pending=null}catch(e){alert('Unable to save updates in browser storage.')}
    };
  };
 
