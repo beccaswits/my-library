@@ -83,7 +83,7 @@ if(!cover||!cover.checked)return;
 const dataField=root.querySelector('#discoveryJSON');
 if(!dataField)return;
 try{const data=JSON.parse(dataField.value);data.coverUrl=chosen;dataField.value=JSON.stringify(data,null,2);
-root.querySelector('#discoveryImport')?.click();}catch(err){}
+root.querySelector('#discoveryImport')?.click();const newApproval=result.querySelector('label input[type=checkbox]');if(newApproval){newApproval.checked=true;newApproval.closest('label').style.display='block'} }catch(err){}
 },true)}
 }
 })();
