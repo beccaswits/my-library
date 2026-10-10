@@ -1,6 +1,6 @@
 (function(){
 const root=document.querySelector('#librarianApp'),card=root?.querySelector('#completeBookCard'),btn=root?.querySelector('#findMissingInfo');if(!card||!btn)return;
-const panel=document.createElement('div');panel.className='librarian-bridge';panel.style.cssText='display:none;margin-top:16px;padding:16px;border:1px solid #927e5266;border-radius:10px;background:#17352c;color:#e6d7b4';
+const panel=document.createElement('div');panel.className='database-metadata-panel';panel.style.cssText='display:none;margin-top:16px;padding:16px;border:1px solid #927e5266;border-radius:10px;background:#17352c;color:#e6d7b4';
 panel.innerHTML='<h3 style="color:#f0dfb6">✦ Find Missing Information</h3><p>Search Open Library and Google Books right here. Choose the correct match, then approve updates in your Research Report.</p><button type="button" class="lib-primary" id="searchBookMetadata">Search Book Databases</button> <button type="button" class="lib-secondary" id="metadataFallback">Use ChatGPT Instead</button><p id="metadataStatus" role="status"></p><div id="metadataResults"></div>';
 card.insertBefore(panel,card.querySelector('.librarian-bridge'));
 const bridge=card.querySelector('.librarian-bridge'),status=panel.querySelector('#metadataStatus'),results=panel.querySelector('#metadataResults');
